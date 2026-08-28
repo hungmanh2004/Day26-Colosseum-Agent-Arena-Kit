@@ -1,6 +1,11 @@
 PY := python3.12
 VENV := .venv
+# venv layout differs by platform: POSIX puts executables in bin/, Windows in
+# Scripts/. `uv venv` follows the same convention as stdlib venv here.
 BIN := $(VENV)/bin
+ifeq ($(OS),Windows_NT)
+BIN := $(VENV)/Scripts
+endif
 BOT ?= rookie
 # `AS` is a GNU make BUILT-IN (the assembler, default `as`), so `AS ?= all`
 # never fired and a plain `make spar BOT=rookie` ran `spar.py --as as`, which
@@ -60,7 +65,7 @@ qualify:
 # --team, which this target never passed, so `make submit` failed twice over.
 submit: validate
 	@test -n "$(TEAM)" || (echo "usage: make submit TEAM=<your-team-name>" && exit 1)
-	$(BIN)/python -m kit.submit --team $(TEAM)
+	$(BIN)/python -m kit.submit --team "$(TEAM)"
 
 test: check-no-key
 	$(BIN)/python -m pytest tests/
